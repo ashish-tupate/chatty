@@ -10,6 +10,7 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
+import com.chatty.dal.UserDAL;
 import com.chatty.model.User;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
@@ -55,11 +56,11 @@ public class UserPassword extends MyHttpServlet {
 				}
 				else
 				{
-					User user = com.chatty.dal.User.getUserByUniqueField("email", email);
+					User user = UserDAL.getUserByUniqueField("email", email);
 					if(user != null)
 					{
 						String password = Utility.createHash(6);
-						if(com.chatty.dal.User.updatePassword(user.getId(), password))
+						if(UserDAL.updatePassword(user.getId(), password))
 						{
 							// TODO send mail
 							apiResponse.addMessage(Response.MESSAGE_TYPE_INFO, "Your password was send to your email.");
@@ -128,13 +129,13 @@ public class UserPassword extends MyHttpServlet {
 			
 			if(!apiResponse.hasError("lastPassword") && !apiResponse.hasError("password") && !apiResponse.hasError("repeatPassword"))
 			{
-				User user = com.chatty.dal.User.getUserByUniqueField("user_id", session.getAttribute("userId"));
+				User user = UserDAL.getUserByUniqueField("user_id", session.getAttribute("userId"));
 				if(user != null)
 				{
 
 					if(Utility.userIdAndPasswordHash(user.getId(), lastPassword).equals(user.getPassword()))
 					{
-						if(com.chatty.dal.User.updatePassword(user.getId(), password))
+						if(UserDAL.updatePassword(user.getId(), password))
 						{
 							// TODO send mail changed your password
 							apiResponse.addMessage(Response.MESSAGE_TYPE_SUCCESS, "Your password was changed.");

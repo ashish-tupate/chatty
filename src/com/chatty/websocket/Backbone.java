@@ -47,6 +47,7 @@ public class Backbone {
 			{
 				users.put(resultSet.getString(1), new HashSet<String>());
 			}
+			Database.closer(resultSet, ps);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -68,8 +69,8 @@ public class Backbone {
 			ps = Database.getPreparedStatement(sql);
 			ResultSet resultSet = ps.executeQuery();
 				
-			ResultSet rsGroupUsers;
-			PreparedStatement psGroupUsers;
+			ResultSet rsGroupUsers = null;
+			PreparedStatement psGroupUsers = null;
 			
 			while(resultSet.next())
 			{
@@ -79,8 +80,11 @@ public class Backbone {
 				rsGroupUsers = psGroupUsers.executeQuery();
 				while (rsGroupUsers.next()) {
 					groups.addUserToGroup(resultSet.getString(2), rsGroupUsers.getString(1));
-				}	
+				}
+				
 			}
+			Database.closer(rsGroupUsers, psGroupUsers);
+			Database.closer(resultSet, ps);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

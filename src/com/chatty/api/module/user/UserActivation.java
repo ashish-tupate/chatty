@@ -10,7 +10,8 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.User;
+import com.chatty.dal.UserDAL;
+import com.chatty.model.User;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -36,7 +37,7 @@ public class UserActivation extends MyHttpServlet {
 		
 		Gson gson = new Gson();
 		Response apiResponse = new Response();
-		com.chatty.model.User user = new com.chatty.model.User();
+		User user = new User();
 		String hash = request.getParameter("hash");
 		
 		if(hash == null || hash.trim().isEmpty())
@@ -45,7 +46,7 @@ public class UserActivation extends MyHttpServlet {
 		}
 		else
 		{
-			user = User.getUserByUniqueField("hash", hash);
+			user = UserDAL.getUserByUniqueField("hash", hash);
 			if(user == null)
 			{
 				apiResponse.addError("hash", "This code is not specified.");
@@ -54,7 +55,7 @@ public class UserActivation extends MyHttpServlet {
 			{
 				if(user.getActivationAt() == null)
 				{
-					if(User.setActivation(user))
+					if(UserDAL.setActivation(user))
 					{
 						apiResponse.addMessage(Response.MESSAGE_TYPE_SUCCESS, "Your account was activated.");
 					}
@@ -79,7 +80,7 @@ public class UserActivation extends MyHttpServlet {
 		
 		Gson gson = new Gson();
 		Response apiResponse = new Response();
-		com.chatty.model.User user = new com.chatty.model.User();
+		User user = new User();
 		HttpSession session = request.getSession();
 		if(!Utility.isOnline(session))
 		{
@@ -98,7 +99,7 @@ public class UserActivation extends MyHttpServlet {
 				}
 				else
 				{
-					user = User.getUserByUniqueField("email", email);
+					user = UserDAL.getUserByUniqueField("email", email);
 					if(user == null)
 					{
 						apiResponse.addError("email", "There is no account with the email.");

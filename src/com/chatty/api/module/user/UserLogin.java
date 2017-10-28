@@ -10,7 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.UserSession;
+import com.chatty.dal.UserDAL;
+import com.chatty.dal.UserSessionDAL;
 import com.chatty.model.User;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
@@ -80,7 +81,7 @@ public class UserLogin extends MyHttpServlet {
 			}
 			else
 			{
-				user = com.chatty.dal.User.getUserByUniqueField("email", email);
+				user = UserDAL.getUserByUniqueField("email", email);
 				if(user == null)
 				{
 					apiResponse.addError("email", "There is no account with the email.");
@@ -98,10 +99,10 @@ public class UserLogin extends MyHttpServlet {
 							HttpSession session = request.getSession(true);
 							session.setAttribute("userId", user.getId());
 							session.setAttribute("userHash", user.getHash());
-							String rememberMe = UserSession.insert(user.getId());
+							String rememberMe = UserSessionDAL.insert(user.getId());
 							if(rememberMe != null)
 							{
-								Cookie rememberMeCookie = new Cookie(UserSession.getCookieName(), rememberMe);
+								Cookie rememberMeCookie = new Cookie(UserSessionDAL.getCookieName(), rememberMe);
 								rememberMeCookie.setPath(request.getContextPath());
 							//	rememberMeCookie.setHttpOnly(true); // session check with js by cookie
 								rememberMeCookie.setMaxAge(2592000); // 60x60x24x30

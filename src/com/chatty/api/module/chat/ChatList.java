@@ -13,9 +13,9 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.Group;
-import com.chatty.dal.GroupUser;
-import com.chatty.dal.Message;
+import com.chatty.dal.GroupDAL;
+import com.chatty.dal.GroupUserDAL;
+import com.chatty.dal.MessageDAL;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -47,14 +47,14 @@ public class ChatList extends MyHttpServlet {
 		
 		if(Utility.isOnline(session))
 		{
-			HashMap<String, HashMap<String, Object>> userGroups = Group.getUserGroups((Integer)session.getAttribute("userId"));
+			HashMap<String, HashMap<String, Object>> userGroups = GroupDAL.getUserGroups((Integer)session.getAttribute("userId"));
 			for (Map.Entry<String, HashMap<String, Object>> entry : userGroups.entrySet())
 			{
 				HashMap<String, Object> values = entry.getValue();
 				
-				values.put("users", GroupUser.getGroupUsers((Integer)values.get("groupId")));
+				values.put("users", GroupUserDAL.getGroupUsers((Integer)values.get("groupId")));
 				
-				values.put("messages", Message.getUserLastMessagesByGroup((Integer)session.getAttribute("userId"), (Integer)values.get("groupId")));
+				values.put("messages", MessageDAL.getUserLastMessagesByGroup((Integer)session.getAttribute("userId"), (Integer)values.get("groupId")));
 				
 				values.remove("groupId");
 			}

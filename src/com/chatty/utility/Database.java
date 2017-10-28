@@ -3,6 +3,7 @@ package com.chatty.utility;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 
@@ -89,13 +90,43 @@ public class Database {
 	public static void close()
 	{
 		try {
-			if(connection != null)
+			if(connection != null && connection.isClosed())
 			{
 				connection.close();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void closer(ResultSet rs)
+	{
+		try {
+			if(rs != null && !rs.isClosed())
+			{
+				rs.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closer(PreparedStatement ps)
+	{
+		try {
+			if(ps != null && !ps.isClosed())
+			{
+				ps.close();
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void closer(ResultSet rs, PreparedStatement ps)
+	{
+		closer(rs);
+		closer(ps);
 	}
 	
 	

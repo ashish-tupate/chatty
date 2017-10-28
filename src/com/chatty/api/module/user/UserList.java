@@ -12,7 +12,7 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.User;
+import com.chatty.dal.UserDAL;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -41,7 +41,7 @@ public class UserList extends MyHttpServlet {
 		HttpSession session = request.getSession();
 		if(Utility.isOnline(session))
 		{
-			HashMap<String, Object> users = User.getAllUser((Integer) session.getAttribute("userId"));
+			HashMap<String, Object> users = UserDAL.getAllUser((Integer) session.getAttribute("userId"));
 			apiResponse.addData("users", users);
 		}
 		else

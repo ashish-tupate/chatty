@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import com.chatty.utility.Database;
 
-public class UserSession {
+public class UserSessionDAL {
 	private static final String tableName = "USER_SESSIONS";
 	private static final String cookieName = "rememberMe";
 	
@@ -25,6 +25,7 @@ public class UserSession {
 				preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 				if(preparedStatement.executeUpdate() != 0)
 				{
+					Database.closer(preparedStatement);
 					return hash;
 				}
 			} catch (SQLException e) {
@@ -42,6 +43,7 @@ public class UserSession {
 			PreparedStatement preparedStatement = Database.getPreparedStatement(sql) ;
 			preparedStatement.setString(1, hash);
 			preparedStatement.executeUpdate();
+			Database.closer(preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -75,6 +77,7 @@ public class UserSession {
 			{
 				userId = resultSet.getInt(1);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

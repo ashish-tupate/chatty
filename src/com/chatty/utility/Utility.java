@@ -101,12 +101,12 @@ public class Utility {
 		{
 			javax.servlet.http.Cookie[] cookies = request.getCookies();
 			for (javax.servlet.http.Cookie cookie : cookies) {
-				if(cookie.getName().equals(com.chatty.dal.UserSession.getCookieName()))
+				if(cookie.getName().equals(com.chatty.dal.UserSessionDAL.getCookieName()))
 				{
-					int userId = com.chatty.dal.UserSession.checkUserSession(cookie.getValue());
+					int userId = com.chatty.dal.UserSessionDAL.checkUserSession(cookie.getValue());
 					if(userId != 0)
 					{
-						com.chatty.model.User user = com.chatty.dal.User.getUserByUniqueField("user_id", userId);
+						com.chatty.model.User user = com.chatty.dal.UserDAL.getUserByUniqueField("user_id", userId);
 						if(user != null)
 						{
 							session = request.getSession(true);
@@ -128,9 +128,9 @@ public class Utility {
 	{
 		javax.servlet.http.Cookie[] cookies = request.getCookies();
 		for (javax.servlet.http.Cookie cookie : cookies) {
-			if(cookie.getName().equals(com.chatty.dal.UserSession.getCookieName()))
+			if(cookie.getName().equals(com.chatty.dal.UserSessionDAL.getCookieName()))
 			{
-				com.chatty.dal.UserSession.delete(cookie.getValue());
+				com.chatty.dal.UserSessionDAL.delete(cookie.getValue());
 				cookie.setPath(request.getContextPath());
 				cookie.setMaxAge(0);
 				response.addCookie(cookie);

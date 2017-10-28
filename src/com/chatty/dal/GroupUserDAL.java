@@ -7,16 +7,18 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 
+import com.chatty.model.GroupUser;
 import com.chatty.utility.Database;
 
-public class GroupUser {
+public class GroupUserDAL {
 	
 	private static final String tableName = "GROUP_USERS";
 	private static final String primaryKey = "GROUP_USER_ID";
 
 	
-	public static int insert(com.chatty.model.GroupUser groupUser)
+	public static int insert(GroupUser groupUser)
 	{
+		int result = 0; 
 		String sql = "INSERT INTO "+tableName+" (USER_ID, GROUP_ID, STATUS, INSERT_AT) VALUES (?,?,?,?)";
 		try {
 			String columnNames[] = {primaryKey};
@@ -25,23 +27,26 @@ public class GroupUser {
 			preparedStatement.setInt(2, groupUser.getGroupId());
 			preparedStatement.setInt(3, groupUser.getStatus());
 			preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				resultSet = preparedStatement.getGeneratedKeys();
 				if(resultSet.next())
 				{
-					return resultSet.getInt(1);
+					result = resultSet.getInt(1);
 				}
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return 0;
+		return result;
 	}
 	
 	
-	public static boolean update(com.chatty.model.GroupUser groupUser)
+	public static boolean update(GroupUser groupUser)
 	{
+		boolean result = false;
 		PreparedStatement preparedStatement;
 		try {
 			preparedStatement = Database.getPreparedStatement("UPDATE "+tableName+" SET LAST_SEEN_AT = ?, STATUS = ?, UPDATE_AT = ? WHERE GROUP_USER_ID = ?");
@@ -51,17 +56,18 @@ public class GroupUser {
 			preparedStatement.setInt(4, groupUser.getId());
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				return true;
+				result = true;
 			}
+			Database.closer(preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return result;
 	}
 	
-	public static com.chatty.model.GroupUser getGroupUserById(int id)
+	public static GroupUser getGroupUserById(int id)
 	{
-		com.chatty.model.GroupUser groupUser = null;
+		GroupUser groupUser = null;
 		PreparedStatement preparedStatement = null;
 		String sql = "SELECT GROUP_USER_ID, USER_ID, GROUP_ID, STATUS, INSERT_AT, UPDATE_AT FROM "+tableName+" WHERE GROUP_USER_ID = ?";
 		Connection connection = Database.getConnection();
@@ -73,18 +79,19 @@ public class GroupUser {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				groupUser = new com.chatty.model.GroupUser();
+				groupUser = new GroupUser();
 				setGroupUserData(groupUser, resultSet);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return groupUser;
 	}
 	
-	public static com.chatty.model.GroupUser getGroupUserByGroupIdAndUserId(int groupId, int userId)
+	public static GroupUser getGroupUserByGroupIdAndUserId(int groupId, int userId)
 	{
-		com.chatty.model.GroupUser groupUser = null;
+		GroupUser groupUser = null;
 		PreparedStatement preparedStatement = null;
 		String sql = "SELECT GROUP_USER_ID, USER_ID, GROUP_ID, STATUS, INSERT_AT, UPDATE_AT FROM "+tableName+" WHERE USER_ID = ? AND GROUP_ID = ?";
 		Connection connection = Database.getConnection();
@@ -97,9 +104,10 @@ public class GroupUser {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				groupUser = new com.chatty.model.GroupUser();
+				groupUser = new GroupUser();
 				setGroupUserData(groupUser, resultSet);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -107,7 +115,7 @@ public class GroupUser {
 	}
 	
 	
-	public static void setGroupUserData(com.chatty.model.GroupUser groupUser, ResultSet resultSet)
+	public static void setGroupUserData(GroupUser groupUser, ResultSet resultSet)
 	{
 		try {
 			groupUser.setId(resultSet.getInt(1));
@@ -135,9 +143,10 @@ public class GroupUser {
 			
 		PreparedStatement preparedStatement;
 		preparedStatement = Database.getPreparedStatement(sb.toString());
+		ResultSet resultSet = null;
 		try {
 			preparedStatement.setInt(1, groupId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 			HashMap<String, Object> listItem;
 			while(resultSet.next())
 			{
@@ -148,7 +157,8 @@ public class GroupUser {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-		}  
+		}
+		Database.closer(resultSet, preparedStatement);
 		return users;
 	}
 	

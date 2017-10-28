@@ -10,11 +10,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.chatty.api.Response;
+import com.chatty.model.Friendship;
 import com.chatty.model.User;
 import com.chatty.utility.Database;
 import com.chatty.websocket.Backbone;
 
-public class Friendship {
+public class FriendshipDAL {
 
 	private static final String tableName = "FRIENDSHIPS";
 	private static final String primaryKey = "FRIENDSHIP_ID";
@@ -100,6 +101,7 @@ public class Friendship {
 				listItem.put("online", Backbone.isOnline(resultSet.getString(1)));
 				friends.add(listItem);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -109,9 +111,9 @@ public class Friendship {
 	}
 	
 	
-	public static com.chatty.model.Friendship getFriendship(User operant, User processing)
+	public static Friendship getFriendship(User operant, User processing)
 	{
-		com.chatty.model.Friendship friendship = null;
+		Friendship friendship = null;
 	//	int operantId = operant.getId();
 		if(operant.getId() > processing.getId())
 		{
@@ -134,7 +136,7 @@ public class Friendship {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				friendship = new com.chatty.model.Friendship();
+				friendship = new Friendship();
 				friendship.setId(resultSet.getInt(1));
 				friendship.setFirstUser(resultSet.getInt(2));
 				friendship.setSecondUser(resultSet.getInt(3));
@@ -143,6 +145,7 @@ public class Friendship {
 				friendship.setInsertAt(resultSet.getTimestamp(6));
 				friendship.setUpdateAt(resultSet.getTimestamp(7));
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -151,8 +154,9 @@ public class Friendship {
 	}
 	
 	
-	public static int insert(com.chatty.model.Friendship friendship)
+	public static int insert(Friendship friendship)
 	{
+		int result = 0;
 		String sql = "INSERT INTO "+tableName+" (FIRST_USER, SECOND_USER, STATUS, SEND_BY, INSERT_AT) VALUES (?,?,?,?,?)";
 		try {
 			String columnNames[] = {primaryKey};
@@ -162,24 +166,27 @@ public class Friendship {
 			preparedStatement.setInt(3, friendship.getStatus());
 			preparedStatement.setInt(4, friendship.getSendBy());
 			preparedStatement.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				resultSet = preparedStatement.getGeneratedKeys();
 				if(resultSet.next())
 				{
-					return resultSet.getInt(1);
+					result = resultSet.getInt(1);
 				}
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return 0;
+		return result;
 	}
 
 	
-	public static boolean update(com.chatty.model.Friendship friendship)
+	public static boolean update(Friendship friendship)
 	{
-		PreparedStatement ps;
+		boolean result = false;
+		PreparedStatement ps = null;
 		try {
 			ps = Database.getPreparedStatement("UPDATE "+tableName+" SET STATUS = ?, SEND_BY = ?, UPDATE_AT = ? WHERE FRIENDSHIP_ID = ?");
 			ps.setInt(1, friendship.getStatus());
@@ -188,12 +195,13 @@ public class Friendship {
 			ps.setInt(4, friendship.getId());
 			if(ps.executeUpdate() != 0)
 			{
-				return true;
+				result = true;
 			}
+			Database.closer(ps);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return result;
 	}
 	
 	
@@ -228,28 +236,28 @@ public class Friendship {
 		{
 
 			friendHash = friendHash.trim();
-			User friend = com.chatty.dal.User.getUserByUniqueField("hash", friendHash);
+			User friend = UserDAL.getUserByUniqueField("hash", friendHash);
 			if(friend == null)
 			{
 				apiResponse.put("hash", "The person was not found.");
 			}
 			else
 			{
-				User user = com.chatty.dal.User.getUserByUniqueField("hash", userHash);
+				User user = UserDAL.getUserByUniqueField("hash", userHash);
 				if(user == null)
 				{
 					apiResponse.put("form", "There is an error.");
 				}
 				else
 				{
-					com.chatty.model.Friendship friendship = getFriendship(user, friend);
+					Friendship friendship = getFriendship(user, friend);
 					if(friendship == null)
 					{
 						System.out.println("friendship is null");
 						// is insert
 						if(status.equals(STATUS_TEXT_ADD))
 						{
-							friendship = new com.chatty.model.Friendship();
+							friendship = new Friendship();
 							if(user.getId() > friend.getId())
 							{
 								friendship.setFirstUser(friend.getId());
@@ -380,14 +388,15 @@ public class Friendship {
 	public static String getFriendshipStatus(int userId, int friendId)
 	{
 		int byWhom = userId;
-		String result = Friendship.STATUS_TEXT_ADD;
+		String result = FriendshipDAL.STATUS_TEXT_ADD;
 		if(userId > friendId)
 		{
 			int temp = userId;
 			userId = friendId;
 			friendId = temp;
 		}
-		PreparedStatement preparedStatement;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
 		try {
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.append("SELECT f.STATUS, f.SEND_BY ")
@@ -398,12 +407,12 @@ public class Friendship {
 			preparedStatement = Database.getPreparedStatement(stringBuilder.toString());
 			preparedStatement.setInt(1, userId);
 			preparedStatement.setInt(2, friendId);
-			preparedStatement.setInt(3, Friendship.STATUS_WAITING);
-			preparedStatement.setInt(4, Friendship.STATUS_APPROVED);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			preparedStatement.setInt(3, FriendshipDAL.STATUS_WAITING);
+			preparedStatement.setInt(4, FriendshipDAL.STATUS_APPROVED);
+			resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				if(resultSet.getInt(1) == Friendship.STATUS_APPROVED)
+				if(resultSet.getInt(1) == FriendshipDAL.STATUS_APPROVED)
 				{
 					result = STATUS_TEXT_DELETE;
 				}
@@ -423,6 +432,7 @@ public class Friendship {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		Database.closer(resultSet, preparedStatement);
 		return result;
 	}
 	

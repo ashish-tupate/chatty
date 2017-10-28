@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
+import com.chatty.dal.UserDAL;
 import com.chatty.model.User;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
@@ -59,7 +60,7 @@ public class UserRegister extends MyHttpServlet {
 			}
 			else
 			{
-				if(com.chatty.dal.User.checkEmailAlreadyTaken(0, email))
+				if(UserDAL.checkEmailAlreadyTaken(0, email))
 				{
 					apiResponse.addError("email", "This email is belong to other account.");
 				}
@@ -123,7 +124,7 @@ public class UserRegister extends MyHttpServlet {
 		else
 		{
 			gender = gender.trim();
-			if(!(gender.equals(com.chatty.dal.User.GENDER_MALE) || gender.equals(com.chatty.dal.User.GENDER_FEMALE)))
+			if(!(gender.equals(UserDAL.GENDER_MALE) || gender.equals(UserDAL.GENDER_FEMALE)))
 			{
 				apiResponse.addError("gender", "This gender is not specified.");
 			}
@@ -135,7 +136,7 @@ public class UserRegister extends MyHttpServlet {
 		
 		if(apiResponse.getError().isEmpty())
 		{
-			int result = com.chatty.dal.User.insert(registerUser);
+			int result = UserDAL.insert(registerUser);
 			if( result == 0)
 			{
 				apiResponse.addError("form", "There is an error.");
@@ -143,7 +144,7 @@ public class UserRegister extends MyHttpServlet {
 			else
 			{
 				apiResponse.addMessage(Response.MESSAGE_TYPE_SUCCESS, "Your registration process was done.");
-				User recordedUser = com.chatty.dal.User.getUserByUniqueField("USER_ID", result);
+				User recordedUser = UserDAL.getUserByUniqueField("USER_ID", result);
 				Utility.sendMail(email, "Wellcome", String.format("Your registration is successful. You must complete your activation with, http://localhost:8787/chatty/user/activation.jsp?hash=%s", recordedUser.getHash()));
 			}
 		}

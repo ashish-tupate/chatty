@@ -11,7 +11,8 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.User;
+import com.chatty.dal.UserDAL;
+import com.chatty.model.User;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -45,7 +46,7 @@ public class UserProfile extends MyHttpServlet {
 			HashMap<String, String> user = new HashMap<>();
 			if(hash == null || hash.trim().isEmpty())
 			{
-				com.chatty.model.User sessionUser = User.getUserByUniqueField("user_id", session.getAttribute("userId"));
+				User sessionUser = UserDAL.getUserByUniqueField("user_id", session.getAttribute("userId"));
 				if(sessionUser != null)
 				{
 					user.put("email", sessionUser.getEmail());
@@ -57,7 +58,7 @@ public class UserProfile extends MyHttpServlet {
 			else
 			{
 				hash = hash.trim();
-				com.chatty.model.User recordUser = User.getUserByUniqueField("hash", hash);
+				User recordUser = UserDAL.getUserByUniqueField("hash", hash);
 				if(recordUser != null)
 				{
 					user.put("firstname", recordUser.getFirstname());

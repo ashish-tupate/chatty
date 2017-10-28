@@ -8,16 +8,18 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.chatty.model.Message;
 import com.chatty.utility.Database;
 
-public class Message {
+public class MessageDAL {
 	
 	private static final String tableName = "MESSAGES";
 	private static final String primaryKey = "MESSAGE_ID";
 
 	
-	public static int insert(com.chatty.model.Message message)
+	public static int insert(Message message)
 	{
+		int result = 0;
 		String sql = "INSERT INTO "+tableName+" (GROUP_ID, USER_ID, CONTENT, INSERT_AT) VALUES (?,?,?,?)";
 		try {
 			String columnNames[] = {primaryKey};
@@ -26,24 +28,26 @@ public class Message {
 			preparedStatement.setInt(2, message.getUserId());
 			preparedStatement.setString(3, message.getContent());
 			preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				resultSet = preparedStatement.getGeneratedKeys();
 				if(resultSet.next())
 				{
-					return resultSet.getInt(1);
+					result = resultSet.getInt(1);
 				}
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return 0;
+		return result;
 	}
 	
 	
-	public static com.chatty.model.Message getMessage(Integer messageId)
+	public static Message getMessage(Integer messageId)
 	{
-		com.chatty.model.Message message = null;
+		Message message = null;
 		PreparedStatement preparedStatement = null;
 		String sql = "SELECT MESSAGE_ID, GROUP_ID, USER_ID, CONTENT, INSERT_AT FROM "+tableName+" WHERE MESSAGE_ID = ?";
 		Connection connection = Database.getConnection();
@@ -55,9 +59,10 @@ public class Message {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				message = new com.chatty.model.Message();
+				message = new Message();
 				setMessageData(message, resultSet);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -65,7 +70,7 @@ public class Message {
 	}
 	
 	
-	public static void setMessageData(com.chatty.model.Message message, ResultSet resultSet)
+	public static void setMessageData(Message message, ResultSet resultSet)
 	{
 		try {
 			message.setId(resultSet.getInt(1));
@@ -101,10 +106,11 @@ public class Message {
 		
 		PreparedStatement preparedStatement;
 		preparedStatement = Database.getPreparedStatement(stringBuilder.toString());
+		ResultSet resultSet = null;
 		try {
 			preparedStatement.setInt(1, groupId);
 			preparedStatement.setInt(2, userId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 			HashMap<String, Object> listItem;
 			while(resultSet.next())
 			{
@@ -117,12 +123,13 @@ public class Message {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+		Database.closer(resultSet, preparedStatement);
 		return messages;
 	}
 	
 	public static boolean canDeleteMesssageByUser(Integer userId, Integer messageId)
 	{
+		boolean result = false;
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder
 			.append("SELECT COUNT(m.MESSAGE_ID) ")
@@ -138,23 +145,26 @@ public class Message {
 			.append(")");
 		
 		PreparedStatement preparedStatement = Database.getPreparedStatement(stringBuilder.toString());
+		ResultSet resultSet = null;
 		try {
 			preparedStatement.setInt(1, messageId);
 			preparedStatement.setInt(2, userId);
 			preparedStatement.setInt(3, userId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				return true;
+				result = true;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		Database.closer(resultSet, preparedStatement);
+		return result;
 	}
 	
 	public static Integer deleteUserMessage(Integer userId, Integer messageId)
 	{
+		int result = 0;
 		if(canDeleteMesssageByUser(userId, messageId))
 		{
 			String sql = "INSERT INTO DELETED_MESSAGES (USER_ID, MESSAGE_ID, INSERT_AT) VALUES (?,?,?)";
@@ -164,19 +174,21 @@ public class Message {
 				preparedStatement.setInt(1, userId);
 				preparedStatement.setInt(2, messageId);
 				preparedStatement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+				ResultSet resultSet = null;
 				if(preparedStatement.executeUpdate() != 0)
 				{
-					ResultSet resultSet = preparedStatement.getGeneratedKeys();
+					resultSet = preparedStatement.getGeneratedKeys();
 					if(resultSet.next())
 					{
-						return resultSet.getInt(1);
+						result = resultSet.getInt(1);
 					}
 				}
+				Database.closer(resultSet, preparedStatement);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
-		return 0;
+		return result;
 	}
 
 }

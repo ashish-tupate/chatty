@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
+import com.chatty.dal.FriendshipDAL;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -44,7 +45,7 @@ public class FriendshipSet extends MyHttpServlet {
 			String status = request.getParameter("status");
 			String friendHash = request.getParameter("hash");
 			
-			HashMap<String, String> friendshipSet = com.chatty.dal.Friendship.set((String)session.getAttribute("userHash"), friendHash, status);
+			HashMap<String, String> friendshipSet = FriendshipDAL.set((String)session.getAttribute("userHash"), friendHash, status);
 			if(friendshipSet.size() != 0)
 			{
 				if(friendshipSet.get(Response.MESSAGE_TYPE_SUCCESS) != null)

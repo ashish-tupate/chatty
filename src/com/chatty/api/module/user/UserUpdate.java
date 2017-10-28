@@ -10,6 +10,7 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
+import com.chatty.dal.UserDAL;
 import com.chatty.model.User;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
@@ -44,7 +45,7 @@ public class UserUpdate extends MyHttpServlet {
 			String lastname = request.getParameter("lastname");
 			String gender = request.getParameter("gender");
 			
-			User user = com.chatty.dal.User.getUserByUniqueField("user_id", session.getAttribute("userId"));
+			User user = UserDAL.getUserByUniqueField("user_id", session.getAttribute("userId"));
 			
 			if(firstname == null || firstname.trim().isEmpty())
 			{
@@ -73,7 +74,7 @@ public class UserUpdate extends MyHttpServlet {
 			else
 			{
 				gender = gender.trim();
-				if(!(gender.equals(com.chatty.dal.User.GENDER_MALE) || gender.equals(com.chatty.dal.User.GENDER_FEMALE)))
+				if(!(gender.equals(UserDAL.GENDER_MALE) || gender.equals(UserDAL.GENDER_FEMALE)))
 				{
 					apiResponse.addError("gender", "This gender is not specified.");
 				}
@@ -84,7 +85,7 @@ public class UserUpdate extends MyHttpServlet {
 			}
 			if(apiResponse.getError().isEmpty())
 			{
-				if(com.chatty.dal.User.update(user))
+				if(UserDAL.update(user))
 				{
 					apiResponse.addMessage(Response.MESSAGE_TYPE_SUCCESS, "Updating was done.");
 				}

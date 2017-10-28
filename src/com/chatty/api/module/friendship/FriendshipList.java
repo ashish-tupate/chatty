@@ -13,7 +13,7 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.Friendship;
+import com.chatty.dal.FriendshipDAL;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -62,7 +62,7 @@ public class FriendshipList extends MyHttpServlet {
 					friendshipStatus = "active";
 				}
 			}
-			apiResponse.addData("friends", Friendship.getFriendsByStatus((Integer)session.getAttribute("userId"), friendshipStatus));
+			apiResponse.addData("friends", FriendshipDAL.getFriendsByStatus((Integer)session.getAttribute("userId"), friendshipStatus));
 		}
 		else
 		{

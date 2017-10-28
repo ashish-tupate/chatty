@@ -8,16 +8,18 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.UUID;
 
+import com.chatty.model.Group;
 import com.chatty.utility.Database;
 
-public class Group {
+public class GroupDAL {
 	
 	private static final String tableName = "GROUPS";
 	private static final String primaryKey = "GROUP_ID";
 
 	
-	public static int insert(com.chatty.model.Group group)
+	public static int insert(Group group)
 	{
+		int result = 0;
 		group.setHash(getUniqueHash());
 		String sql = "INSERT INTO "+tableName+" (NAME, HASH, IS_GROUP, STATUS, CREATED_BY, INSERT_AT) VALUES (?,?,?,?,?,?)";
 		try {
@@ -29,23 +31,26 @@ public class Group {
 			preparedStatement.setInt(4, group.getStatus());
 			preparedStatement.setInt(5, group.getCreateBy());
 			preparedStatement.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				resultSet = preparedStatement.getGeneratedKeys();
 				if(resultSet.next())
 				{
-					return resultSet.getInt(1);
+					result = resultSet.getInt(1);
 				}
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return 0;
+		return result;
 	}
 	
 	
-	public static boolean update(com.chatty.model.Group group)
+	public static boolean update(Group group)
 	{
+		boolean result = false;
 		PreparedStatement preparedStatement;
 		try {
 			preparedStatement = Database.getPreparedStatement("UPDATE "+tableName+" SET NAME = ?, STATUS = ?, UPDATE_AT = ? WHERE GROUP_ID = ?");
@@ -55,26 +60,29 @@ public class Group {
 			preparedStatement.setInt(4, group.getId());
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				return true;
+				result = true;
 			}
+			Database.closer(preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return result;
 	}
 	
 	public static String getUniqueHash()
 	{
 		String hash = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
 		while(true)
 		{
 			String sql = "SELECT GROUP_ID FROM " + tableName + " WHERE HASH = ?";
 			try {
 				UUID uuid = UUID.randomUUID();
 				
-				PreparedStatement preparedStatement = Database.getPreparedStatement(sql) ;
+				preparedStatement = Database.getPreparedStatement(sql) ;
 				preparedStatement.setString(1, uuid.toString());
-				ResultSet resultSet = preparedStatement.executeQuery();
+				resultSet = preparedStatement.executeQuery();
 				if(!resultSet.next())
 				{
 					hash = uuid.toString();
@@ -84,6 +92,7 @@ public class Group {
 				e.printStackTrace();
 			}
 		}
+		Database.closer(resultSet, preparedStatement);
 		return hash;
 	}
 	
@@ -113,8 +122,9 @@ public class Group {
 				result.put("userGroupStatus", resultSet.getInt(4));
 				result.put("friendGroupStatus", resultSet.getInt(5));
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (Exception e) {
-			// TODO: handle exception
+
 		}
 		return result;
 	}
@@ -134,9 +144,9 @@ public class Group {
 	}
 	
 	
-	public static com.chatty.model.Group getGroupByUniqueField(String type, Object value)
+	public static Group getGroupByUniqueField(String type, Object value)
 	{
-		com.chatty.model.Group group = null;
+		Group group = null;
 		PreparedStatement preparedStatement = null;
 		String sql = "SELECT GROUP_ID, NAME, HASH, IS_GROUP, STATUS, CREATED_BY, INSERT_AT, UPDATE_AT FROM "+tableName+" WHERE ";
 		Connection connection = Database.getConnection();
@@ -158,9 +168,10 @@ public class Group {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				group = new com.chatty.model.Group();
+				group = new Group();
 				setGroupData(group, resultSet);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -168,7 +179,7 @@ public class Group {
 	}
 	
 	
-	public static void setGroupData(com.chatty.model.Group group, ResultSet resultSet)
+	public static void setGroupData(Group group, ResultSet resultSet)
 	{
 		try {
 			group.setId(resultSet.getInt(1));
@@ -238,6 +249,7 @@ public class Group {
 				listItem.put("createdBy", resultSet.getString("CREATED_BY"));
 				userGroups.put(resultSet.getString("GROUP_HASH"), listItem);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}  

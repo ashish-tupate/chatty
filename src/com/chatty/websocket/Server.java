@@ -21,10 +21,14 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import com.chatty.api.Response;
-import com.chatty.dal.Friendship;
-import com.chatty.dal.Group;
+import com.chatty.dal.FriendshipDAL;
+import com.chatty.dal.GroupDAL;
+import com.chatty.dal.GroupUserDAL;
+import com.chatty.dal.MessageDAL;
+import com.chatty.dal.UserDAL;
 import com.chatty.model.GroupUser;
 import com.chatty.model.User;
+import com.chatty.model.Group;
 
 @ApplicationScoped
 @ServerEndpoint( 
@@ -34,7 +38,7 @@ import com.chatty.model.User;
 		  configurator = GetHttpSessionConfigurator.class)
 public class Server{
 	HttpSession httpSession;
-	
+		
     @OnOpen
     public void open(Session session, @PathParam("userHash") String userHash, EndpointConfig config) throws Exception {
     	/*
@@ -79,7 +83,7 @@ public class Server{
 		}
 		else
 		{
-			User user = com.chatty.dal.User.getUserByUniqueField("hash", userHash);
+			User user = UserDAL.getUserByUniqueField("hash", userHash);
 			if(user != null)
 			{
 				Backbone.getUsers().put(userHash, new HashSet<String>());
@@ -114,7 +118,7 @@ public class Server{
     public void onMessage(Session session, Message message) throws IOException, EncodeException {
     	String socketProcess = (String)message.get("sp"); 
     	String userHash = Backbone.getSessions().get(session.getId()).getUserHash();
-    	User socketUser = com.chatty.dal.User.getUserByUniqueField("hash", userHash);
+    	User socketUser = UserDAL.getUserByUniqueField("hash", userHash);
         switch (socketProcess) {
 			case "friend:set":
 				messageFriendSet(message, socketUser);
@@ -141,7 +145,7 @@ public class Server{
 				messageMessageDelete(message, socketUser);
 			break;
 		}
-        
+
     }
     
     private void messageMessageDelete(Message message, User socketUser) {
@@ -149,9 +153,9 @@ public class Server{
 			return;
 		}
 
-		if(com.chatty.dal.Message.deleteUserMessage(socketUser.getId(), (Integer)message.get("messageId")) > 0)
+		if(MessageDAL.deleteUserMessage(socketUser.getId(), (Integer)message.get("messageId")) > 0)
 		{
-			com.chatty.model.Message messageDetail = com.chatty.dal.Message.getMessage((Integer)message.get("messageId"));
+			com.chatty.model.Message messageDetail = MessageDAL.getMessage((Integer)message.get("messageId"));
 			Message userMessage = new Message("message:delete");
 			userMessage.put("groupHash", messageDetail.getGroupId());
 			userMessage.put("messageId", messageDetail.getId());
@@ -176,25 +180,25 @@ public class Server{
 		userMessageData.setUserId(socketUser.getId());
 		userMessageData.setContent((String)message.get("text"));
 		Integer messageId = null;
-		if((messageId = com.chatty.dal.Message.insert(userMessageData)) != 0)
+		if((messageId = MessageDAL.insert(userMessageData)) != 0)
 		{
 			Message userMessage = new Message("message:send");
 			userMessage.put("groupHash", groupHash);
 			HashMap<String, Object> messageData = new HashMap<>();
 			messageData.put("id", messageId);
-			messageData.put("owner", socketUser.getId());
+			messageData.put("owner", socketUser.getHash());
 			messageData.put("text", userMessageData.getContent());
 			userMessage.put("message", messageData);
 			sendToRoom(userMessage, groupHash);
 		}
 	}
-
+	
 
 	private void messageGroupMemberDelete(Message message, User socketUser) {
 		if(message.get("groupHash") == null || message.get("userHash") == null) {
 			return;
 		}
-		com.chatty.model.Group groupDelete = Group.getGroupByUniqueField("hash", (String)message.get("groupHash"));
+		Group groupDelete = GroupDAL.getGroupByUniqueField("hash", (String)message.get("groupHash"));
 		if(groupDelete == null || groupDelete.getCreateBy() != socketUser.getId() || message.get("userHash") != socketUser.getHash())
 		{
 			return;
@@ -206,15 +210,15 @@ public class Server{
 		}
 		else
 		{
-			deletedUser = com.chatty.dal.User.getUserByUniqueField("hash", message.get("userHash"));
+			deletedUser = UserDAL.getUserByUniqueField("hash", message.get("userHash"));
 		}
-		GroupUser friendGroupDataDeleted = com.chatty.dal.GroupUser.getGroupUserByGroupIdAndUserId(groupDelete.getId(), deletedUser.getId());
+		GroupUser friendGroupDataDeleted = GroupUserDAL.getGroupUserByGroupIdAndUserId(groupDelete.getId(), deletedUser.getId());
 		if(friendGroupDataDeleted == null || friendGroupDataDeleted.getStatus() == 1)
 		{
 			return;
 		}
 		friendGroupDataDeleted.setStatus(0);
-		if(com.chatty.dal.GroupUser.update(friendGroupDataDeleted))
+		if(GroupUserDAL.update(friendGroupDataDeleted))
 		{			
 			Message userMessage = new Message("group:member:delete");
 			userMessage.put("groupHash", groupDelete.getHash());
@@ -231,24 +235,24 @@ public class Server{
 		if(message.get("groupHash") == null || message.get("userHash") == null) {
 			return;
 		}
-		User groupMemberInsert = com.chatty.dal.User.getUserByUniqueField("hash", (String)message.get("userHash"));
-		if(!Group.isFriend(socketUser.getId(), groupMemberInsert.getId()))
+		User groupMemberInsert = UserDAL.getUserByUniqueField("hash", (String)message.get("userHash"));
+		if(!GroupDAL.isFriend(socketUser.getId(), groupMemberInsert.getId()))
 		{
 			return;
 		}
 		
-		com.chatty.model.Group group = Group.getGroupByUniqueField("hash", (String)message.get("groupHash"));
+		Group group = GroupDAL.getGroupByUniqueField("hash", (String)message.get("groupHash"));
 		if(group == null || group.getStatus() != 1)
 		{
 			return;
 		}
-		GroupUser userGroupData = com.chatty.dal.GroupUser.getGroupUserByGroupIdAndUserId(group.getId(), socketUser.getId());
+		GroupUser userGroupData = GroupUserDAL.getGroupUserByGroupIdAndUserId(group.getId(), socketUser.getId());
 		if(userGroupData == null || userGroupData.getStatus() != 1)
 		{
 			return;
 		}
 		
-		GroupUser friendGroupData = com.chatty.dal.GroupUser.getGroupUserByGroupIdAndUserId(group.getId(), groupMemberInsert.getId());
+		GroupUser friendGroupData = GroupUserDAL.getGroupUserByGroupIdAndUserId(group.getId(), groupMemberInsert.getId());
 		if(friendGroupData == null)
 		{
 			// insert
@@ -256,7 +260,7 @@ public class Server{
 			friendGroupData.setGroupId(group.getId());
 			friendGroupData.setUserId(groupMemberInsert.getId());
 			friendGroupData.setStatus(1);
-			if(com.chatty.dal.GroupUser.insert(friendGroupData) != 0)
+			if(GroupUserDAL.insert(friendGroupData) != 0)
 			{
 				Backbone.getGroups().addUserToGroup(group.getHash(), groupMemberInsert.getHash());
 				Message userMessage = new Message("group:member:insert");
@@ -273,7 +277,7 @@ public class Server{
 			if(friendGroupData.getStatus() != 1)
 			{
 				friendGroupData.setStatus(1);
-				if(com.chatty.dal.GroupUser.update(friendGroupData))
+				if(GroupUserDAL.update(friendGroupData))
 				{
 					Backbone.getGroups().addUserToGroup(group.getHash(), groupMemberInsert.getHash());
 					Message userMessage = new Message("group:member:insert");
@@ -292,11 +296,11 @@ public class Server{
 		if(message.get("hash") == null) {
 			return;
 		}
-		com.chatty.model.Group deleteGroup = Group.getGroupByUniqueField("hash", message.get("hash"));
+		Group deleteGroup = GroupDAL.getGroupByUniqueField("hash", message.get("hash"));
 		if(deleteGroup != null && deleteGroup.getCreateBy() == socketUser.getId())
 		{
 			deleteGroup.setStatus(0);
-			if(Group.update(deleteGroup))
+			if(GroupDAL.update(deleteGroup))
 			{
 				Message userMessage = new Message("group:update");
 				userMessage.put("hash", deleteGroup.getHash());
@@ -312,11 +316,11 @@ public class Server{
 		if(message.get("hash") == null || message.get("name") == null) {
 			return;
 		}
-		com.chatty.model.Group updateGroup = Group.getGroupByUniqueField("hash", message.get("hash"));
+		Group updateGroup = GroupDAL.getGroupByUniqueField("hash", message.get("hash"));
 		if(updateGroup != null && updateGroup.getCreateBy() == socketUser.getId())
 		{
 			updateGroup.setName((String)message.get("name"));
-			if(Group.update(updateGroup))
+			if(GroupDAL.update(updateGroup))
 			{
 				Message userMessage = new Message("group:update");
 				userMessage.put("hash", updateGroup.getHash());
@@ -333,15 +337,15 @@ public class Server{
 		}
 	
 		// create group
-		int groupId = Group.insert(new com.chatty.model.Group((String)message.get("name"), 1, socketUser.getId(), 1));
+		int groupId = GroupDAL.insert(new Group((String)message.get("name"), 1, socketUser.getId(), 1));
 		if(groupId != 0)
 		{
 			// user attent to groups 
-			int groupUserId = com.chatty.dal.GroupUser.insert(new GroupUser(groupId, socketUser.getId(), 1));
+			int groupUserId = GroupUserDAL.insert(new GroupUser(groupId, socketUser.getId(), 1));
 			
 			if(groupUserId != 0)
 			{
-				com.chatty.model.Group group = Group.getGroupByUniqueField("group_id", groupId);
+				Group group = GroupDAL.getGroupByUniqueField("group_id", groupId);
 				Backbone.getGroups().addGroup(group.getHash(), group.getId());
 				Backbone.getGroups().addUserToGroup(group.getHash(), socketUser.getHash());
 
@@ -370,25 +374,25 @@ public class Server{
 
 		String friendHash = (String)message.get("userHash");
 		String status = (String)message.get("status");
-		HashMap<String, String> friendshipSet = com.chatty.dal.Friendship.set(socketUser.getHash(), friendHash, status);
+		HashMap<String, String> friendshipSet = FriendshipDAL.set(socketUser.getHash(), friendHash, status);
 		
 		if(friendshipSet.size() == 0 || friendshipSet.get(Response.MESSAGE_TYPE_SUCCESS) == null){
 			return;
 		}
 		
-		User friendObj = com.chatty.dal.User.getUserByUniqueField("hash", friendHash);
+		User friendObj = UserDAL.getUserByUniqueField("hash", friendHash);
 		
 		Message newMessage = new Message("friend:set");
 		newMessage.put("userHash", friendHash);
-		newMessage.put("status", Friendship.getFriendshipStatus(socketUser.getId(), friendObj.getId()));
+		newMessage.put("status", FriendshipDAL.getFriendshipStatus(socketUser.getId(), friendObj.getId()));
 		
 		Message friendNewMessage = new Message("friend:set");
 		friendNewMessage.put("userHash", socketUser.getHash());
-		friendNewMessage.put("status", Friendship.getFriendshipStatus(friendObj.getId(), socketUser.getId()));
+		friendNewMessage.put("status", FriendshipDAL.getFriendshipStatus(friendObj.getId(), socketUser.getId()));
 		
-		if(status.equals(Friendship.STATUS_TEXT_APPROVE))
+		if(status.equals(FriendshipDAL.STATUS_TEXT_APPROVE))
 		{
-			HashMap<String, Object> friendGroup = Group.checkFriendshipGroup(socketUser.getId(), friendObj.getId());
+			HashMap<String, Object> friendGroup = GroupDAL.checkFriendshipGroup(socketUser.getId(), friendObj.getId());
 			newMessage.put("groupHash", friendGroup.get("groupHash"));
 			friendNewMessage.put("groupHash", friendGroup.get("groupHash"));
 		}

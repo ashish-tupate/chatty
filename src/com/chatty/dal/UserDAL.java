@@ -8,11 +8,12 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.UUID;
 
+import com.chatty.model.User;
 import com.chatty.utility.Database;
 import com.chatty.utility.Utility;
 import com.chatty.websocket.Backbone;
 
-public class User {
+public class UserDAL {
 	
 	public static final String GENDER_MALE = "male";
 	public static final String GENDER_FEMALE = "female";
@@ -20,7 +21,7 @@ public class User {
 	private static final String tableName = "USERS";
 	private static final String primaryKey = "USER_ID";
 
-	public static int insert(com.chatty.model.User user)
+	public static int insert(User user)
 	{
 		String hash = getUniqueHash();
 		if(hash != null)
@@ -47,9 +48,11 @@ public class User {
 						updatePassword(lastInsertId, user.getPassword());
 						// send activation email
 					//	Utility.sendMail(user.getEmail(), "Kayıt işleminiz gerçekleşti", "Lütfen hesabınızın aktivasyonu için mailinize gelen linki tarayıcınızda çalıştırın.");
+						Database.closer(resultSet);
 						return lastInsertId;
 					}
 				}
+				Database.closer(preparedStatement);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
@@ -61,15 +64,17 @@ public class User {
 	public static String getUniqueHash()
 	{
 		String hash = null;
+		PreparedStatement preparedStatement;
+		ResultSet resultSet;
 		while(true)
 		{
 			String sql = "SELECT USER_ID FROM " + tableName + " WHERE hash = ?";
 			try {
 				UUID uuid = UUID.randomUUID();
 				
-				PreparedStatement preparedStatement = Database.getPreparedStatement(sql) ;
+				preparedStatement = Database.getPreparedStatement(sql) ;
 				preparedStatement.setString(1, uuid.toString());
-				ResultSet resultSet = preparedStatement.executeQuery();
+				resultSet = preparedStatement.executeQuery();
 				if(!resultSet.next())
 				{
 					hash = uuid.toString();
@@ -79,46 +84,54 @@ public class User {
 				e.printStackTrace();
 			}
 		}
+		Database.closer(resultSet, preparedStatement);
 		return hash;
 	}
 	
 	
 	public static boolean checkEmailAlreadyTaken(int userId, String email)
 	{
+		boolean result = false;
 		String sql = "SELECT * FROM "+tableName+" WHERE USER_ID != ? AND EMAIL = ?";
 		try {
 			PreparedStatement preparedStatement = Database.getPreparedStatement(sql) ;
 			preparedStatement.setInt(1, userId);
 			preparedStatement.setString(2, email);
 			ResultSet resultSet = preparedStatement.executeQuery();
-			return resultSet.next();
+			if(resultSet.next())
+			{
+				result = true;
+			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return result;
 	}
 	
 	
 	public static boolean updatePassword(int userId, String password)
 	{
-		PreparedStatement preparedStatement;
+		boolean result = false;
+		PreparedStatement preparedStatement = null;
 		try {
 			preparedStatement = Database.getPreparedStatement("UPDATE "+tableName+" SET PASSWORD = ? WHERE USER_ID = ?");
 			preparedStatement.setString(1, Utility.userIdAndPasswordHash(userId, password));
 			preparedStatement.setInt(2, userId);
 			if(preparedStatement.executeUpdate() != 0)
 			{
-				return true;
+				result = true;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		Database.closer(preparedStatement);
+		return result;
 	}
 	
-	public static boolean update(com.chatty.model.User user)
+	public static boolean update(User user)
 	{
-		PreparedStatement preparedStatement;
+		PreparedStatement preparedStatement = null;
 		try {
 			preparedStatement = Database.getPreparedStatement("UPDATE "+tableName+" SET FIRSTNAME = ?, LASTNAME = ?, GENDER = ? WHERE USER_ID = ?");
 			preparedStatement.setString(1, user.getFirstname());
@@ -132,28 +145,34 @@ public class User {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		Database.closer(preparedStatement);
 		return false;
 	}
 
 
-	public static boolean setActivation(com.chatty.model.User user)
+	public static boolean setActivation(User user)
 	{
-		PreparedStatement preparedStatement;
+		boolean result = false;
+		PreparedStatement preparedStatement = null;
 		try {
 			preparedStatement = Database.getPreparedStatement("UPDATE "+tableName+" SET ACTIVATION_AT = ? WHERE USER_ID = ?");
 			preparedStatement.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
 			preparedStatement.setInt(2, user.getId());
-			return preparedStatement.executeUpdate() != 0;
+			if(preparedStatement.executeUpdate() != 0)
+			{
+				result = true;
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		Database.closer(preparedStatement);
+		return result;
 	}
 
 	
-	public static com.chatty.model.User getUserByUniqueField(String type, Object value)
+	public static User getUserByUniqueField(String type, Object value)
 	{
-		com.chatty.model.User user = null;
+		User user = null;
 		PreparedStatement preparedStatement = null;
 		String sql = "SELECT USER_ID, HASH, EMAIL, PROFILE_PHOTO, FIRSTNAME, LASTNAME, GENDER, PASSWORD, ACTIVATION_AT, INSERT_AT, UPDATE_AT FROM "+tableName+" WHERE ";
 		Connection connection = Database.getConnection();
@@ -181,9 +200,10 @@ public class User {
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{
-				user = new com.chatty.model.User();
+				user = new User();
 				setUserData(user, resultSet);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -191,7 +211,7 @@ public class User {
 	}
 	
 	
-	public static void setUserData(com.chatty.model.User user, ResultSet resultSet)
+	public static void setUserData(User user, ResultSet resultSet)
 	{
 		try {
 			user.setId(resultSet.getInt(1));
@@ -234,10 +254,11 @@ public class User {
 				listItem.put("firstname", resultSet.getString(2));
 				listItem.put("lastname", resultSet.getString(3));
 				listItem.put("gender", resultSet.getString(4));
-				listItem.put("status", Friendship.getFriendshipStatus(userId, resultSet.getInt(5)));
+				listItem.put("status", FriendshipDAL.getFriendshipStatus(userId, resultSet.getInt(5)));
 				listItem.put("online", Backbone.isOnline(resultSet.getString(1)));
 				allUsers.put(resultSet.getString(1), listItem);
 			}
+			Database.closer(resultSet, preparedStatement);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

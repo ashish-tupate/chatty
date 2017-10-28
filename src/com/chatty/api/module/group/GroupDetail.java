@@ -13,9 +13,10 @@ import javax.servlet.http.HttpSession;
 
 import com.chatty.api.MyHttpServlet;
 import com.chatty.api.Response;
-import com.chatty.dal.Group;
-import com.chatty.dal.GroupUser;
-import com.chatty.dal.Message;
+import com.chatty.dal.GroupDAL;
+import com.chatty.dal.GroupUserDAL;
+import com.chatty.dal.MessageDAL;
+import com.chatty.model.Group;
 import com.chatty.utility.Utility;
 import com.google.gson.Gson;
 
@@ -50,17 +51,17 @@ public class GroupDetail extends MyHttpServlet {
 			String groupHash = request.getParameter("group"); 
 			if( groupHash != null && !groupHash.isEmpty() )
 			{
-				com.chatty.model.Group groupDetail = Group.getGroupByUniqueField("hash", groupHash);
+				Group groupDetail = GroupDAL.getGroupByUniqueField("hash", groupHash);
 				if(groupDetail != null)
 				{
-					HashMap<String, HashMap<String, Object>> userGroups = Group.getUserGroup((Integer)session.getAttribute("userId"), groupDetail.getId());
+					HashMap<String, HashMap<String, Object>> userGroups = GroupDAL.getUserGroup((Integer)session.getAttribute("userId"), groupDetail.getId());
 					for (Map.Entry<String, HashMap<String, Object>> entry : userGroups.entrySet())
 					{
 						HashMap<String, Object> values = entry.getValue();
 						
-						values.put("users", GroupUser.getGroupUsers((Integer)values.get("groupId")));
+						values.put("users", GroupUserDAL.getGroupUsers((Integer)values.get("groupId")));
 						
-						values.put("messages", Message.getUserLastMessagesByGroup((Integer)session.getAttribute("userId"), (Integer)values.get("groupId")));
+						values.put("messages", MessageDAL.getUserLastMessagesByGroup((Integer)session.getAttribute("userId"), (Integer)values.get("groupId")));
 						
 						values.remove("groupId");
 					}
