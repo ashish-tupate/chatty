@@ -19,7 +19,7 @@ public class GroupUserDAL {
 	public static int insert(GroupUser groupUser)
 	{
 		int result = 0; 
-		String sql = "INSERT INTO "+tableName+" (USER_ID, GROUP_ID, STATUS, INSERT_AT) VALUES (?,?,?,?)";
+		String sql = "INSERT INTO "+tableName+" (USER_ID, GROUP_ID, STATUS, INSERT_AT, UPDATE_AT) VALUES (?,?,?,?,?)";
 		try {
 			String columnNames[] = {primaryKey};
 			PreparedStatement preparedStatement = Database.getPreparedStatement(sql, columnNames);
@@ -27,6 +27,7 @@ public class GroupUserDAL {
 			preparedStatement.setInt(2, groupUser.getGroupId());
 			preparedStatement.setInt(3, groupUser.getStatus());
 			preparedStatement.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+			preparedStatement.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
 			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{

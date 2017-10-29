@@ -21,7 +21,7 @@ public class GroupDAL {
 	{
 		int result = 0;
 		group.setHash(getUniqueHash());
-		String sql = "INSERT INTO "+tableName+" (NAME, HASH, IS_GROUP, STATUS, CREATED_BY, INSERT_AT) VALUES (?,?,?,?,?,?)";
+		String sql = "INSERT INTO "+tableName+" (NAME, HASH, IS_GROUP, STATUS, CREATED_BY, INSERT_AT, UPDATE_AT) VALUES (?,?,?,?,?,?,?)";
 		try {
 			String columnNames[] = {primaryKey};
 			PreparedStatement preparedStatement = Database.getPreparedStatement(sql, columnNames);
@@ -31,6 +31,7 @@ public class GroupDAL {
 			preparedStatement.setInt(4, group.getStatus());
 			preparedStatement.setInt(5, group.getCreateBy());
 			preparedStatement.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
+			preparedStatement.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
 			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{
@@ -223,7 +224,7 @@ public class GroupDAL {
 		
 		if(groupId != null)
 		{
-			sb.append("AND s.GROUP_ID = ? ");
+			sb.append("WHERE s.GROUP_ID = ? ");
 		}
 		sb.append("ORDER BY title");
 			

@@ -1,0 +1,12 @@
+<div id="messenger-container" class="positon-sticky bottom row float-right">
+	<div id="group-boxes"></div>
+	<div id="group-container" class="">
+		<div>
+			<span class="create-group-btn btn" >Create Group <i class="fa fa-plus" aria-hidden="true"></i></span>
+			<input class="d-none" type="text" name="group" ng-model="createGroupName">
+		</div>
+		<ul>
+			<li ng-repeat="(id,room) in rooms" ng-dblclick="openConversation(id)">{{room.name}}</li>
+		</ul>
+	</div>
+</div>

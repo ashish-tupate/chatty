@@ -1,0 +1,18 @@
+<a class="btn btn-md" ui-sref="root.userChangePassword">Change Password</a>
+<a class="btn btn-md" ui-sref="root.userUpdateProfile">Update Profile</a>
+<a class="btn btn-md" ng-click="logout()">Logout</a>
+
+<div>
+	<ul>
+		<li ng-repeat="(key, user) in users">
+			<span ng-click="setFriendship(key, user.status)">
+				<i class="fa {{getFAClass(user.status)}}" aria-hidden="true" title="{{user.status}}"></i>
+			</span>
+			<span ng-if="user.status == 'deny'" ng-click="setFriendship(key, 'approve')">
+				<i class="fa {{getFAClass('approve')}}" aria-hidden="true" title="approve"></i>
+			</span>
+			<span ui-sref="root.userView({hash:key})">{{user.firstname}} {{user.lastname}}</span>
+			<span ng-if="user.online" class="badge badge-success">Online</span>
+		</li>
+	</ul>
+</div>

@@ -27,7 +27,7 @@ public class UserDAL {
 		if(hash != null)
 		{
 			user.setHash(getUniqueHash());
-			String sql = "INSERT INTO "+tableName+" (HASH, EMAIL, FIRSTNAME, LASTNAME, GENDER, PASSWORD, INSERT_AT) VALUES (?,?,?,?,?,?,?)";
+			String sql = "INSERT INTO "+tableName+" (HASH, EMAIL, FIRSTNAME, LASTNAME, GENDER, PASSWORD, INSERT_AT, UPDATE_AT) VALUES (?,?,?,?,?,?,?,?)";
 			
 			try {
 				String userKey[] = {primaryKey};
@@ -39,6 +39,7 @@ public class UserDAL {
 				preparedStatement.setString(5, user.getGender());
 				preparedStatement.setString(6, "temp");
 				preparedStatement.setTimestamp(7, new Timestamp(System.currentTimeMillis()));
+				preparedStatement.setTimestamp(8, new Timestamp(System.currentTimeMillis()));
 				if(preparedStatement.executeUpdate() != 0)
 				{
 					ResultSet resultSet = preparedStatement.getGeneratedKeys();

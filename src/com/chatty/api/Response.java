@@ -19,7 +19,7 @@ public class Response {
 	private HashMap<String, String> error;
 
 	public Object getData() {
-		return data;
+		return this.data;
 	}
 
 	public void setData(HashMap<String, Object> data) {
@@ -28,7 +28,7 @@ public class Response {
 	
 	public void addData(String key, Object value)
 	{
-		if(this.data == null)
+		if(this.data == null || this.data.size() == 0)
 		{
 			this.data = new HashMap<String, Object>();
 		}

@@ -1,0 +1,90 @@
+@CHARSET "UTF-8";
+
+[href]:hover {
+	cursor: pointer;
+}
+#messenger-container, #group-container {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+
+#group-container {
+	width: 200px;
+	background-color: #ffffff;
+    border: 2px solid #0000ff;
+    border-radius: 5px 5px 0 0;
+}
+
+#group-container li:hover {
+	cursor: pointer;
+}
+
+ul {
+	list-style: none;
+}
+
+#group-boxes {
+	position: relative;
+	right: 200px;	
+}
+
+#group-boxes [data-room-hash] {
+	background-color: #ffffff;
+	float: left;
+	height: 300px;
+	width: 260px;
+	margin: 5px 5px 0 5px;
+    border: 2px solid blue;
+    border-radius: 5px 5px 0 0;
+}
+
+#group-boxes [data-room-hash] .title {
+    background-color: blue;
+    color: white;
+    padding-left: 10px;
+}
+
+#group-boxes [data-room-hash] ul {
+	height: 225px;
+	overflow-y: scroll;
+	padding: 5px;
+	
+}
+
+#group-boxes [data-room-hash] ul li {
+	margin: 3px;
+}
+
+#group-boxes [data-room-hash] ul li span {
+	border-radius: 10px;
+	padding: 2px 5px;
+	clear: both;
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 90%;
+}
+
+#group-boxes [data-room-hash] ul li.me {
+	text-align: right;
+}
+
+#group-boxes [data-room-hash] ul li.me span {
+	background-color: #4080ff;
+	color: #ffffff;
+}
+
+#group-boxes [data-room-hash] ul li.others {
+	
+}
+
+#group-boxes [data-room-hash] ul li.others span{
+	background-color: #f1f0f0;
+}
+
+#group-boxes [data-room-hash] [name=message] {
+	width: 100%;
+    border: 1px solid;
+    border-color: white;
+}

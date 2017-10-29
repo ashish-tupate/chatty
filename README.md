@@ -8,8 +8,8 @@ Chat Project with Java-JDBC-OracleDB-Angular
 	* Jsp
 	* OracleDB
 	* JDBC
-	* Angular (I haven't shared html-js-css files because of I've been developing.)
+	* Angular
 
 ## License
 
-A short snippet describing the license (MIT, Apache, etc.)
+MIT (c) 2017 Serdar Başyiğit

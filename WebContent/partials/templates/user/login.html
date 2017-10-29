@@ -1,0 +1,17 @@
+<form method="post" ng-submit="userLogin()">
+	<h2>Sign in</h2>
+	<div ng-show="formError.form" class="form-control-feedback p-1 mb-1  text-danger">{{formError.form}}</div>
+	<div class="form-group">
+		<label class="form-control-label" for="email">Email</label>
+		<input type="email" class="form-control" id="email" name="email" ng-model="loginForm.email" required autofocus/>
+		<div ng-show="formError.email" class="form-control-feedback p-1 mb-1  text-danger">{{formError.email}}</div>
+	</div>
+	<div class="form-group">
+		<label class="form-control-label" for="password">Password</label>
+		<input type="password" class="form-control" id="password" name="password" ng-model="loginForm.password" required/>
+		<div ng-show="formError.password" class="form-control-feedback p-1 mb-1  text-danger">{{formError.password}}</div>
+	</div>
+	<button type="submit" class="btn btn-primary btn-block">Submit</button>
+	<a class="btn btn-md float-left" ui-sref="root.userRegister" ui-sref-active="active">Sign up</a>
+	<a class="btn btn-md float-right" ui-sref="root.userForgotPassword" ui-sref-active="active">Forgot Password</a>
+</form>

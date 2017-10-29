@@ -1,0 +1,28 @@
+<form method="post" ng-submit="updateProfile()">
+	<h2>Profile Update</h2>
+	<div ng-show="formError.form" class="form-control-feedback p-1 mb-1  text-danger">{{formError.form}}</div>
+	<div class="form-group">
+		<label class="form-control-label" for="firstname">Firstname</label>
+		<input type="text" class="form-control" id="firstname" name="firstname" ng-model="userProfileForm.firstname" required/>
+		<div ng-show="formError.firstname" class="form-control-feedback p-1 mb-1  text-danger">{{formError.firstname}}</div>
+	</div>
+	<div class="form-group">
+		<label class="form-control-label" for="lastname">Lastname</label>
+		<input type="text" class="form-control" id="lastname" name="lastname" ng-model="userProfileForm.lastname" required/>
+		<div ng-show="formError.lastname" class="form-control-feedback p-1 mb-1  text-danger">{{formError.lastname}}</div>
+	</div>
+	<div class="form-group">
+		<label class="custom-control custom-radio">
+			<input id="male" name="gender" ng-model="userProfileForm.gender" value="male" type="radio" class="custom-control-input">
+			<span class="custom-control-indicator"></span>
+			<span class="custom-control-description">Male</span>
+		</label>
+		<label class="custom-control custom-radio">
+			<input id="female" name="gender" ng-model="userProfileForm.gender" value="female" type="radio" class="custom-control-input">
+			<span class="custom-control-indicator"></span>
+			<span class="custom-control-description">Female</span>
+		</label>
+	</div>
+	<button type="submit" class="btn btn-primary btn-block">Submit</button>
+	<a class="btn btn-md float-left" ui-sref="root.user" ui-sref-active="active">Cancel</a>
+</form>

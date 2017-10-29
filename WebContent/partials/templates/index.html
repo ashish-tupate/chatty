@@ -1,0 +1,5 @@
+<h1>Chatty</h1>
+<p>Chatty is a chat application which you can type to person and group</p>
+<a ng-if="!isOnline()" class="btn btn-md float-left" ui-sref="root.userLogin">Login</a>
+<a ng-if="!isOnline()" class="btn btn-md float-left" ui-sref="root.userRegister">Register</a>
+<a ng-if="isOnline()" class="btn btn-md float-left" ng-click="logout()">Logout</a>

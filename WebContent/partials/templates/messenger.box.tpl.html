@@ -1,0 +1,11 @@
+<div>
+	<div class="title"><i class="fa" ng-class="rooms[roomHash]['isGroup'] ? 'fa-users' : 'fa-user'" aria-hidden="true"></i> {{rooms[roomHash]['name']}}</div>
+	<div class="minify-division">
+		<ul class="{{roomHash}}">
+			<li ng-repeat="(id ,message) in rooms[roomHash]['messages']" ng-class="message.owner == userHash ? 'me' : 'others'">
+				<span>{{message.text}}</span>
+			</li>
+		</ul>
+		<input type="text" name="message" placeholder="Type something"/>
+	</div>
+</div>

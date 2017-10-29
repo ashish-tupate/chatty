@@ -157,7 +157,7 @@ public class FriendshipDAL {
 	public static int insert(Friendship friendship)
 	{
 		int result = 0;
-		String sql = "INSERT INTO "+tableName+" (FIRST_USER, SECOND_USER, STATUS, SEND_BY, INSERT_AT) VALUES (?,?,?,?,?)";
+		String sql = "INSERT INTO "+tableName+" (FIRST_USER, SECOND_USER, STATUS, SEND_BY, INSERT_AT, UPDATE_AT) VALUES (?,?,?,?,?,?)";
 		try {
 			String columnNames[] = {primaryKey};
 			PreparedStatement preparedStatement = Database.getPreparedStatement(sql, columnNames);
@@ -166,6 +166,7 @@ public class FriendshipDAL {
 			preparedStatement.setInt(3, friendship.getStatus());
 			preparedStatement.setInt(4, friendship.getSendBy());
 			preparedStatement.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
+			preparedStatement.setTimestamp(6, new Timestamp(System.currentTimeMillis()));
 			ResultSet resultSet = null;
 			if(preparedStatement.executeUpdate() != 0)
 			{

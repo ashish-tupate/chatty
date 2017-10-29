@@ -49,7 +49,7 @@ public class GroupDetail extends MyHttpServlet {
 		if(Utility.isOnline(session))
 		{
 			String groupHash = request.getParameter("group"); 
-			if( groupHash != null && !groupHash.isEmpty() )
+			if( groupHash != null && !groupHash.trim().isEmpty() )
 			{
 				Group groupDetail = GroupDAL.getGroupByUniqueField("hash", groupHash);
 				if(groupDetail != null)

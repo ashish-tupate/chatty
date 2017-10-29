@@ -1,0 +1,11 @@
+<form method="post" ng-submit="userActivation()">
+	<h2>Activation</h2>
+	<div ng-show="formError.form" class="form-control-feedback p-1 mb-1  text-danger">{{formError.form}}</div>
+	<div class="form-group">
+		<label class="form-control-label" for="hash">Activation Code</label>
+		<input type="text" class="form-control" id="hash" name="hash" ng-model="activationForm.hash" required autofocus/>
+		<div ng-show="formError.hash" class="form-control-feedback p-1 mb-1  text-danger">{{formError.hash}}</div>
+	</div>
+	<button type="submit" class="btn btn-primary btn-block">Submit</button>
+	<a class="btn btn-md float-left" ui-sref="root.index" ui-sref-active="active">Cancel</a>
+</form>
