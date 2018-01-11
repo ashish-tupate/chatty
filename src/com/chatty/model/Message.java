@@ -57,6 +57,14 @@ public class Message {
 	}
 
 
+	public Timestamp getUpdateAt() {
+		return updateAt;
+	}
+
+	public void setUpdateAt(Timestamp updateAt) {
+		this.updateAt = updateAt;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

@@ -1,7 +1,6 @@
 define(['app', 'underscore'], function(app, _){
 	var injectParams = ['$window', '$rootScope', '$scope', '$state', 'AppConfig', '$http', '$location', 'Utilities', '$httpParamSerializerJQLike','Socket'];
 	var UserController = function ($window, $rootScope, $scope, $state, AppConfig, $http, $location, Utilities, $httpParamSerializerJQLike, Socket) {
-		console.log(123123123);
 		$scope.userLogin = function(){
 			$rootScope.isLoading = true;
 			$http({
@@ -177,7 +176,6 @@ define(['app', 'underscore'], function(app, _){
 		};
 
 		$scope.init = function(){
-			console.log("sdfgg");
 			// run controller's init by url for default values
 			if($state.current.name == 'root.userLogin'){
 				if(Utilities.checkUserOnline())

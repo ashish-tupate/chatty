@@ -32,7 +32,6 @@ public class GroupDetail extends MyHttpServlet {
      */
     public GroupDetail() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**

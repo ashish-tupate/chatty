@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="EclipseModuleManager">
+    <libelement value="jar:///Library/Java/Extensions/crouton-1.8.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/gson-2.2.2.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/javax.annotation.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/javax.faces-2.2.1.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/javax.servlet.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/javax.servlet.jsp.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/servlet-api-2.5.jar!/" />
+    <libelement value="jar:///Library/Java/Extensions/ojdbc/ojdbc6_g.jar!/" />
+    <src_description expected_position="0">
+      <src_folder value="file://$MODULE_DIR$/src" expected_position="0" />
+    </src_description>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/build/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="crouton-1.8.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/crouton-1.8.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="gson-2.2.2.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/gson-2.2.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="javax.annotation.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/javax.annotation.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="javax.faces-2.2.1.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/javax.faces-2.2.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="javax.servlet.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/javax.servlet.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="javax.servlet.jsp.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/javax.servlet.jsp.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="servlet-api-2.5.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/servlet-api-2.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="ojdbc6_g.jar">
+        <CLASSES>
+          <root url="jar:///Library/Java/Extensions/ojdbc/ojdbc6_g.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="inheritedJdk" />
+  </component>
+</module>

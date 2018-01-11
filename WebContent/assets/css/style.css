@@ -26,7 +26,8 @@ ul {
 
 #group-boxes {
 	position: relative;
-	right: 200px;	
+	right: 200px;
+	height: 305px;
 }
 
 #group-boxes [data-room-hash] {
@@ -37,6 +38,13 @@ ul {
 	margin: 5px 5px 0 5px;
     border: 2px solid blue;
     border-radius: 5px 5px 0 0;
+    display:initial;
+}
+
+#group-boxes .minimize[data-room-hash] {
+	bottom: -272px;
+    position: relative;
+    height: 28px;
 }
 
 #group-boxes [data-room-hash] .title {
@@ -44,6 +52,24 @@ ul {
     color: white;
     padding-left: 10px;
 }
+
+#group-boxes [data-room-hash] .title .fa-window-maximize{
+	display:none;
+}
+
+#group-boxes .minimize[data-room-hash] .title .fa-window-maximize{
+	display:inline-block;
+}
+
+#group-boxes [data-room-hash] .title .fa-window-minimize{
+	display:inline-block;
+}
+
+#group-boxes .minimize[data-room-hash] .title .fa-window-minimize{
+	display:none;
+}
+	
+
 
 #group-boxes [data-room-hash] ul {
 	height: 225px;

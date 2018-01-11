@@ -85,7 +85,6 @@ public class Utility {
 			   Transport.send(message);  
 			   transport.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}  
 
@@ -100,27 +99,31 @@ public class Utility {
 		if((session == null || session.getAttribute("userId") == null))
 		{
 			javax.servlet.http.Cookie[] cookies = request.getCookies();
-			for (javax.servlet.http.Cookie cookie : cookies) {
-				if(cookie.getName().equals(com.chatty.dal.UserSessionDAL.getCookieName()))
-				{
-					int userId = com.chatty.dal.UserSessionDAL.checkUserSession(cookie.getValue());
-					if(userId != 0)
+			if(cookies != null && cookies.length > 0)
+			{
+				for (javax.servlet.http.Cookie cookie : cookies) {
+					if(cookie.getName().equals(com.chatty.dal.UserSessionDAL.getCookieName()))
 					{
-						com.chatty.model.User user = com.chatty.dal.UserDAL.getUserByUniqueField("user_id", userId);
-						if(user != null)
+						int userId = com.chatty.dal.UserSessionDAL.checkUserSession(cookie.getValue());
+						if(userId != 0)
 						{
-							session = request.getSession(true);
-							session.setAttribute("userId", user.getId());
-							session.setAttribute("userHash", user.getHash());
+							com.chatty.model.User user = com.chatty.dal.UserDAL.getUserByUniqueField("user_id", userId);
+							if(user != null)
+							{
+								session = request.getSession(true);
+								session.setAttribute("userId", user.getId());
+								session.setAttribute("userHash", user.getHash());
+							}
 						}
+						else
+						{
+							deleteSessionCookie(request, response);
+						}
+						break;
 					}
-					else
-					{
-						deleteSessionCookie(request, response);
-					}
-					break;
 				}
 			}
+
 		}
 	}
 	

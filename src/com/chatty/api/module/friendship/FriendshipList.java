@@ -29,7 +29,6 @@ public class FriendshipList extends MyHttpServlet {
      */
     public FriendshipList() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**

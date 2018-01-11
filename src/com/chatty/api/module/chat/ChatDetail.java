@@ -26,7 +26,6 @@ public class ChatDetail extends MyHttpServlet {
      */
     public ChatDetail() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**

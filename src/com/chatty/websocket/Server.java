@@ -1,6 +1,7 @@
 package com.chatty.websocket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -198,8 +199,13 @@ public class Server{
 		if(message.get("groupHash") == null || message.get("userHash") == null) {
 			return;
 		}
-		Group groupDelete = GroupDAL.getGroupByUniqueField("hash", (String)message.get("groupHash"));
-		if(groupDelete == null || groupDelete.getCreateBy() != socketUser.getId() || message.get("userHash") != socketUser.getHash())
+		Group groupDelete = GroupDAL.getGroupByUniqueField("HASH", (String)message.get("groupHash"));
+		if(groupDelete == null)
+		{
+			return;
+		}
+		
+		if( !((String)message.get("userHash")).equals(socketUser.getHash()) && groupDelete.getCreateBy() != socketUser.getId())
 		{
 			return;
 		}
@@ -213,7 +219,7 @@ public class Server{
 			deletedUser = UserDAL.getUserByUniqueField("hash", message.get("userHash"));
 		}
 		GroupUser friendGroupDataDeleted = GroupUserDAL.getGroupUserByGroupIdAndUserId(groupDelete.getId(), deletedUser.getId());
-		if(friendGroupDataDeleted == null || friendGroupDataDeleted.getStatus() == 1)
+		if(friendGroupDataDeleted == null || friendGroupDataDeleted.getStatus() == 0)
 		{
 			return;
 		}
@@ -232,52 +238,38 @@ public class Server{
 
 	private void messageGroupMemberInsert(Message message, User socketUser)
     {
-		if(message.get("groupHash") == null || message.get("userHash") == null) {
+		if(message.get("groupHash") == null || message.get("users") == null) {
 			return;
 		}
-		User groupMemberInsert = UserDAL.getUserByUniqueField("hash", (String)message.get("userHash"));
-		if(!GroupDAL.isFriend(socketUser.getId(), groupMemberInsert.getId()))
-		{
-			return;
-		}
-		
 		Group group = GroupDAL.getGroupByUniqueField("hash", (String)message.get("groupHash"));
 		if(group == null || group.getStatus() != 1)
 		{
 			return;
 		}
+		
 		GroupUser userGroupData = GroupUserDAL.getGroupUserByGroupIdAndUserId(group.getId(), socketUser.getId());
 		if(userGroupData == null || userGroupData.getStatus() != 1)
 		{
 			return;
 		}
 		
-		GroupUser friendGroupData = GroupUserDAL.getGroupUserByGroupIdAndUserId(group.getId(), groupMemberInsert.getId());
-		if(friendGroupData == null)
-		{
-			// insert
-			friendGroupData = new GroupUser();
-			friendGroupData.setGroupId(group.getId());
-			friendGroupData.setUserId(groupMemberInsert.getId());
-			friendGroupData.setStatus(1);
-			if(GroupUserDAL.insert(friendGroupData) != 0)
+		ArrayList<String> users = (ArrayList<String>) message.get("users");
+		for (String userHash : users) {
+			User groupMemberInsert = UserDAL.getUserByUniqueField("hash", userHash);
+			if(!GroupDAL.isFriend(socketUser.getId(), groupMemberInsert.getId()))
 			{
-				Backbone.getGroups().addUserToGroup(group.getHash(), groupMemberInsert.getHash());
-				Message userMessage = new Message("group:member:insert");
-				userMessage.put("groupHash", group.getHash());
-				userMessage.put("userHash", groupMemberInsert.getHash());
-				userMessage.put("fullname", groupMemberInsert.getFullname());
-				userMessage.put("userStatus", 1);
-				sendToRoom(userMessage, group.getHash());
+				return;
 			}
-		}
-		else
-		{
-			// update
-			if(friendGroupData.getStatus() != 1)
+			
+			GroupUser friendGroupData = GroupUserDAL.getGroupUserByGroupIdAndUserId(group.getId(), groupMemberInsert.getId());
+			if(friendGroupData == null)
 			{
+				// insert
+				friendGroupData = new GroupUser();
+				friendGroupData.setGroupId(group.getId());
+				friendGroupData.setUserId(groupMemberInsert.getId());
 				friendGroupData.setStatus(1);
-				if(GroupUserDAL.update(friendGroupData))
+				if(GroupUserDAL.insert(friendGroupData) != 0)
 				{
 					Backbone.getGroups().addUserToGroup(group.getHash(), groupMemberInsert.getHash());
 					Message userMessage = new Message("group:member:insert");
@@ -288,7 +280,27 @@ public class Server{
 					sendToRoom(userMessage, group.getHash());
 				}
 			}
+			else
+			{
+				// update
+				if(friendGroupData.getStatus() != 1)
+				{
+					friendGroupData.setStatus(1);
+					if(GroupUserDAL.update(friendGroupData))
+					{
+						Backbone.getGroups().addUserToGroup(group.getHash(), groupMemberInsert.getHash());
+						Message userMessage = new Message("group:member:insert");
+						userMessage.put("groupHash", group.getHash());
+						userMessage.put("userHash", groupMemberInsert.getHash());
+						userMessage.put("fullname", groupMemberInsert.getFullname());
+						userMessage.put("userStatus", 1);
+						sendToRoom(userMessage, group.getHash());
+					}
+				}
+			}
+			
 		}
+
 	}
 
 
@@ -393,8 +405,74 @@ public class Server{
 		if(status.equals(FriendshipDAL.STATUS_TEXT_APPROVE))
 		{
 			HashMap<String, Object> friendGroup = GroupDAL.checkFriendshipGroup(socketUser.getId(), friendObj.getId());
-			newMessage.put("groupHash", friendGroup.get("groupHash"));
-			friendNewMessage.put("groupHash", friendGroup.get("groupHash"));
+			if(friendGroup == null)
+			{	
+				Group friendshipGroup = new Group(0, socketUser.getId(), 1);
+				int friendshipGroupId = GroupDAL.insert(friendshipGroup);
+				if(friendshipGroupId > 0)
+				{
+					GroupUser groupUser = new GroupUser();
+					groupUser.setGroupId(friendshipGroupId);
+					groupUser.setStatus(1);
+					
+					groupUser.setUserId(socketUser.getId());
+					GroupUserDAL.insert(groupUser);
+					
+					groupUser.setUserId(friendObj.getId());
+					GroupUserDAL.insert(groupUser);
+					
+					friendshipGroup = GroupDAL.getGroupByUniqueField("GROUP_ID", friendshipGroupId);
+					if(friendshipGroup != null)
+					{
+						newMessage.put("groupHash", friendshipGroup.getHash());
+						friendNewMessage.put("groupHash", friendshipGroup.getHash());
+						
+						Backbone.getGroups().addGroup(friendshipGroup.getHash(), friendshipGroup.getId());
+						Backbone.getGroups().addUserToGroup(friendshipGroup.getHash(), socketUser.getHash());
+						Backbone.getGroups().addUserToGroup(friendshipGroup.getHash(), friendObj.getHash());
+					}
+				}
+			}
+			else
+			{
+				newMessage.put("groupHash", friendGroup.get("groupHash"));
+				friendNewMessage.put("groupHash", friendGroup.get("groupHash"));
+				Group friendshipGroup = GroupDAL.getGroupByUniqueField("HASH", friendGroup.get("groupHash"));
+				
+				if((int)friendGroup.get("userGroupStatus") != 1)
+				{
+					GroupUser groupUser = GroupUserDAL.getGroupUserById((int)friendGroup.get("userGroupId"));
+					if(groupUser != null)
+					{
+						groupUser.setStatus(1);
+						GroupUserDAL.update(groupUser);
+					}
+				}
+				
+				if((int)friendGroup.get("friendGroupStatus") != 1)
+				{
+					GroupUser groupUser = GroupUserDAL.getGroupUserById((int)friendGroup.get("friendGroupId"));
+					if(groupUser != null)
+					{
+						groupUser.setStatus(1);
+						GroupUserDAL.update(groupUser);
+					}
+				}
+				if(friendshipGroup != null)
+				{
+					Backbone.getGroups().addGroup(friendshipGroup.getHash(), friendshipGroup.getId());
+					Backbone.getGroups().addUserToGroup(friendshipGroup.getHash(), socketUser.getHash());
+					Backbone.getGroups().addUserToGroup(friendshipGroup.getHash(), friendObj.getHash());
+				}
+
+			}
+		}
+		else if (status.equals(FriendshipDAL.STATUS_TEXT_DELETE)) {
+			HashMap<String, Object> friendGroup = GroupDAL.checkFriendshipGroup(socketUser.getId(), friendObj.getId());
+			if(friendGroup != null)
+			{	
+				Backbone.getGroups().deleteGroup((String)friendGroup.get("groupHash"));
+			}
 		}
 		
 		sendToUser(newMessage, socketUser.getHash());
@@ -404,15 +482,15 @@ public class Server{
 
 	@OnClose
     public void onClose(Session session) {
-    	System.out.println("Server disconnect...");
-    	disconnectBroadcast(session);
+	    	System.out.println("Server disconnect...");
+	    	disconnectBroadcast(session);
     }
 
 
     @OnError
     public void onError(Throwable error) {
-    	System.out.println("on error socket");
-    	System.out.println(error);
+    		System.out.println("on error socket");
+    		error.printStackTrace();
     }
     
     @Asynchronous
@@ -430,7 +508,6 @@ public class Server{
 	            broadcast(message);
 	        }
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	

@@ -145,7 +145,7 @@ public class UserRegister extends MyHttpServlet {
 			{
 				apiResponse.addMessage(Response.MESSAGE_TYPE_SUCCESS, "Your registration process was done.");
 				User recordedUser = UserDAL.getUserByUniqueField("USER_ID", result);
-				Utility.sendMail(email, "Wellcome", String.format("Your registration is successful. You must complete your activation with, http://localhost:8787/chatty/user/activation.jsp?hash=%s", recordedUser.getHash()));
+				Utility.sendMail(email, "Wellcome", String.format("Your registration is successful. You must complete your activation with, http://localhost:8080/chatty/user/activation.jsp?hash=%s", recordedUser.getHash()));
 			}
 		}
 		response.getWriter().print(gson.toJson(apiResponse));

@@ -127,7 +127,19 @@ define(['app', 'ngCookies', 'ngSanitize'], function (app) {
 				{
 					$rootScope.rooms[data.groupHash]["messages"] = [];
 				}
+				var messageContainer = document.querySelector('#group-boxes [data-room-hash="'+data.groupHash+'"] ul');;
+				var isBottom = false;
+				if(messageContainer)
+				{
+					isBottom = messageContainer.scrollHeight - messageContainer.scrollTop - messageContainer.offsetHeight <= 0;
+				}
 				$rootScope.rooms[data.groupHash]["messages"].push(data.message);
+				if(isBottom)
+				{
+					setTimeout(function(){
+						messageContainer.scrollTop = messageContainer.scrollHeight - messageContainer.offsetHeight;
+					}, 500);
+				}
 		    });
 		};
 		
@@ -158,7 +170,7 @@ define(['app', 'ngCookies', 'ngSanitize'], function (app) {
 		
 		if(document.body.id)
 		{
-			window.ws = new WebSocket("ws://localhost:8787/chatty/chat/"+document.body.id);
+			window.ws = new WebSocket("ws://localhost:8080/chatty/chat/"+document.body.id);
 
 			emit = function(type, obj){
 				// socket process

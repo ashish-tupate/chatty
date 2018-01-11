@@ -11,7 +11,8 @@ define('app', ['defaultRoutes', 'routeResolver'], function(defaultRoutes){
 	app.constant('AppConfig', {
 		cookiePrefix: 'chattyApp',
 		urls : {
-			restUrl : 'http://localhost:8787/chatty/api/'
+			restUrl : 'http://localhost:8080/chatty/api/'
+				
 		},
 		userLoginState: 'root.userLogin'
 	});

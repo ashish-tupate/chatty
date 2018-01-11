@@ -176,6 +176,7 @@ public class UserDAL {
 		User user = null;
 		PreparedStatement preparedStatement = null;
 		String sql = "SELECT USER_ID, HASH, EMAIL, PROFILE_PHOTO, FIRSTNAME, LASTNAME, GENDER, PASSWORD, ACTIVATION_AT, INSERT_AT, UPDATE_AT FROM "+tableName+" WHERE ";
+		
 		Connection connection = Database.getConnection();
 		
 		try {
@@ -197,7 +198,7 @@ public class UserDAL {
 					break;
 			}
 			
-		
+
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if(resultSet.next())
 			{

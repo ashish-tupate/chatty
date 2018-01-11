@@ -31,7 +31,6 @@ public class ChatList extends MyHttpServlet {
      */
     public ChatList() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**

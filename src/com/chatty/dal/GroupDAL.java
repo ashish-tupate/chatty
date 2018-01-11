@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -125,7 +126,7 @@ public class GroupDAL {
 			}
 			Database.closer(resultSet, preparedStatement);
 		} catch (Exception e) {
-
+			e.getStackTrace();
 		}
 		return result;
 	}
@@ -260,6 +261,74 @@ public class GroupDAL {
 	public static HashMap<String, HashMap<String, Object>> getUserGroups(Integer userId)
 	{
 		 return getUserGroup(userId, null);
+	}
+	
+	public static ArrayList<HashMap<String, Object>> getGroupUsersByUserFriends(int groupId, int userId)
+	{
+		System.out.println(groupId + " " + userId + " sdfsdfsf");
+		ArrayList<HashMap<String, Object>> users = new ArrayList<>();
+		StringBuilder sb = new StringBuilder();
+		  sb.append("SELECT DISTINCT u.HASH, u.FIRSTNAME, u.LASTNAME, q.FRIEND, ")
+				.append("CASE WHEN gu.STATUS IS NULL THEN 0 ELSE 1 END STATUS ")
+			.append("FROM ( ")
+				.append("( ")
+					.append("SELECT CASE WHEN f.FIRST_USER = ? THEN f.SECOND_USER ELSE f.FIRST_USER END id, 1 friend ")
+					.append("FROM FRIENDSHIPS f ")
+					.append("WHERE (f.FIRST_USER = ? OR f.SECOND_USER = ?) AND f.STATUS = ? ")
+				.append(") UNION ")
+				.append("( ")
+					.append("SELECT gu.USER_ID id, CASE WHEN gu.USER_ID IS NULL THEN 0 ELSE 1 END friend ")
+					.append("FROM GROUP_USERS gu ")
+					.append("LEFT JOIN FRIENDSHIPS f ")
+						.append("ON ((f.FIRST_USER = ? AND f.SECOND_USER = gu.USER_ID) OR (f.FIRST_USER = gu.USER_ID AND f.SECOND_USER = ?)) ")
+						.append("AND f.STATUS = ? ")
+					.append("WHERE gu.GROUP_ID = ? ")
+						.append("AND gu.USER_ID != ? ")
+						.append("AND gu.STATUS = ? ")
+				.append(") ")
+			.append(") q ")
+			.append("INNER JOIN USERS u ")
+				.append("ON u.USER_ID = q.id ")
+			.append("LEFT JOIN GROUP_USERS gu ")
+				.append("ON gu.GROUP_ID = ? ")
+				.append("AND gu.USER_ID = q.id ")
+				.append("AND gu.STATUS = ? ")
+		//	.append("GROUP BY u.HASH ")
+			.append("ORDER BY u.FIRSTNAME, u.LASTNAME ");
+			
+		  
+		PreparedStatement ps;
+		ps = Database.getPreparedStatement(sb.toString());
+		try {
+			ps.setInt(1, userId);
+			ps.setInt(2, userId);
+			ps.setInt(3, userId);
+			ps.setInt(4, FriendshipDAL.STATUS_APPROVED);
+			ps.setInt(5, userId);
+			ps.setInt(6, userId);
+			ps.setInt(7, FriendshipDAL.STATUS_APPROVED);
+			ps.setInt(8, groupId);
+			ps.setInt(9, userId);
+			ps.setInt(10, GroupUserDAL.STATUS_ACTIVE);
+			ps.setInt(11, groupId);
+			ps.setInt(12, GroupUserDAL.STATUS_ACTIVE);
+			ResultSet resultSet = ps.executeQuery();
+			HashMap<String, Object> listItem;
+			while(resultSet.next())
+			{
+				listItem = new HashMap<String, Object>();
+				listItem.put("hash", resultSet.getString("HASH"));
+				listItem.put("firstname", resultSet.getString("FIRSTNAME"));
+				listItem.put("lastname", resultSet.getString("LASTNAME"));
+				listItem.put("isFriend", resultSet.getInt("FRIEND"));
+				listItem.put("status", resultSet.getInt("STATUS"));
+				users.add(listItem);
+			}
+			Database.closer(resultSet, ps);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}  
+		return users;
 	}
 
 }

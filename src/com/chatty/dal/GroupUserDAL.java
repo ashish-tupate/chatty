@@ -14,8 +14,11 @@ public class GroupUserDAL {
 	
 	private static final String tableName = "GROUP_USERS";
 	private static final String primaryKey = "GROUP_USER_ID";
-
 	
+	public static final int STATUS_ACTIVE = 1;
+	public static final int STATUS_DELETED = 2;
+
+
 	public static int insert(GroupUser groupUser)
 	{
 		int result = 0; 

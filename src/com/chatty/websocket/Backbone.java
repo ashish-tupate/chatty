@@ -76,7 +76,7 @@ public class Backbone {
 			{
 				groups.addGroup(resultSet.getString(2), resultSet.getInt(1));
 				psGroupUsers = Database.getPreparedStatement(sb.toString());
-				psGroupUsers.setString(1, resultSet.getString(1));
+				psGroupUsers.setInt(1, resultSet.getInt(1));
 				rsGroupUsers = psGroupUsers.executeQuery();
 				while (rsGroupUsers.next()) {
 					groups.addUserToGroup(resultSet.getString(2), rsGroupUsers.getString(1));
@@ -186,6 +186,14 @@ public class Backbone {
 				groupData.put(idKey, groupId);
 				groupData.put(userKey, new HashSet<>());
 				data.put(groupHash, groupData);
+			}
+		}
+		
+		public static void deleteGroup(String groupHash)
+		{
+			if(data.containsKey(groupHash))
+			{
+				data.remove(groupHash);
 			}
 		}
 		

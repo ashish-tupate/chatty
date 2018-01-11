@@ -1,11 +1,47 @@
 <div>
-	<div class="title"><i class="fa" ng-class="rooms[roomHash]['isGroup'] ? 'fa-users' : 'fa-user'" aria-hidden="true"></i> {{rooms[roomHash]['name']}}</div>
+	<div class="title">
+		<i class="fa" ng-class="rooms[roomHash]['isGroup'] ? 'fa-users' : 'fa-user'" aria-hidden="true"></i> {{rooms[roomHash]['name']}}
+		<i class="fa fa-remove float-right" aria-hidden="true" title="Close" ng-click="close()"></i>
+		<i class="fa fa-window-minimize float-right" aria-hidden="true" title="Minimize" ng-click="minimize()"></i>
+		<i class="fa fa-window-maximize float-right" aria-hidden="true" title="Maximize" ng-click="maximize()"></i>
+		<i ng-if="rooms[roomHash]['isGroup'] && isActive(roomHash)" class="fa fa-user-plus float-right" aria-hidden="true"  title="Add User" ng-click="addUser(roomHash)"></i>
+		<i ng-if="rooms[roomHash]['isGroup'] && isActive(roomHash)" class="fa fa-chain-broken float-right" aria-hidden="true"  title="Quit" ng-click="removeMe(roomHash)"></i>
+	</div>
 	<div class="minify-division">
 		<ul class="{{roomHash}}">
 			<li ng-repeat="(id ,message) in rooms[roomHash]['messages']" ng-class="message.owner == userHash ? 'me' : 'others'">
+				<div ng-if="messageBoxByUser(rooms[roomHash]['isGroup'], message.owner)">{{getUserName(message.owner)}}</div>
 				<span>{{message.text}}</span>
 			</li>
 		</ul>
-		<input type="text" name="message" placeholder="Type something"/>
+		<input type="text" name="message" placeholder="Type something" autocomplete="off"/>
+	</div>
+	
+	
+	<div class="modal" id="group-user-modal" tabindex="-1" role="dialog" aria-labelledby="group-user-modal-label" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Add User To Group</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+			<ul class="">
+				<li ng-repeat="agu in availableGroupUsers">
+					<input ng-if="agu.isFriend && !agu.status" type="checkbox" class="available-group-user-hash" value="{{agu.hash}}">
+					<i class="fa fa-circle" ng-class="{'text-muted': !agu.status, 'text-success': agu.status}" aria-hidden="true" title="{{agu.status == 1 ? 'member of group' : 'quit the group'}}"></i>
+					{{agu.firstname}} {{agu.lastname}}
+				</li>
+			</ul>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	        <button type="button" class="btn btn-primary" ng-click="addUserToGroup()">Add</button>
+	      </div>
+	    </div>
+	  </div>
 	</div>
 </div>
+
